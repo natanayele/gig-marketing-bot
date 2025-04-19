@@ -1,5 +1,5 @@
 import os
 
-TOKEN = os.environ.get("8094207130:AAF3B43M82-0wtPaPO2QLGmSE5wB-D3pc4A")
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
 DOCUMENTATION_GROUP_ID = int(os.environ.get("DOCUMENTATION_GROUP_ID"))
 MARKETING_GROUP_ID     = int(os.environ.get("MARKETING_GROUP_ID"))
