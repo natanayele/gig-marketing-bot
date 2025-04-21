@@ -36,6 +36,6 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}  # Optional for public repos
+          # Optional for public repos
         files: ./coverage.xml
         fail_ci_if_error: false
