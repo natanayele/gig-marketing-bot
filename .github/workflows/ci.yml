@@ -36,6 +36,8 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}  # Optional for public repos
+        token: ${{ secrets.CODECOV_TOKEN }}
+	slug: natanayele/gig-marketing-bot
+  # Optional for public repos
         files: ./coverage.xml
         fail_ci_if_error: false
