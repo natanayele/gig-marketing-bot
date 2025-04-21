@@ -1,22 +1,13 @@
-import os
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from telegram import Update
-from telegram.ext import ContextTypes
 
+from gig_bot.handlers.marketing import forward_to_marketing
+import gig_bot.config as config
 
-@patch.dict(os.environ, {
-    "DOCUMENTATION_GROUP_ID": "1234",
-    "MARKETING_GROUP_ID": "5678",
-    "TELEGRAM_TOKEN": "dummy-token"
-})
 @pytest.mark.asyncio
 async def test_forward_valid_message():
-    import importlib
-    import gig_bot.config as config
-    importlib.reload(config)
-
-    from gig_bot.handlers.marketing import forward_to_marketing
+    config.DOCUMENTATION_GROUP_ID = 1234
+    config.MARKETING_GROUP_ID = 5678
 
     mock_msg = MagicMock()
     mock_msg.chat.id = 1234
@@ -44,7 +35,7 @@ async def test_rejects_wrong_group():
     config.DOCUMENTATION_GROUP_ID = 1234
 
     mock_msg = MagicMock()
-    mock_msg.chat.id = 9999  # Unauthorized group
+    mock_msg.chat.id = 9999
     mock_msg.text = "/marketing Should not forward"
     mock_msg.reply_text = AsyncMock()
 
@@ -65,7 +56,7 @@ async def test_empty_message_handled():
 
     mock_msg = MagicMock()
     mock_msg.chat.id = 1234
-    mock_msg.text = "/marketing"  # No message content
+    mock_msg.text = "/marketing"
     mock_msg.reply_text = AsyncMock()
 
     mock_update = MagicMock()
@@ -91,7 +82,6 @@ async def test_handler_exception_logged():
     mock_update = MagicMock()
     mock_update.message = mock_msg
 
-    # Simulate an exception in the bot
     mock_bot = AsyncMock()
     mock_bot.send_message.side_effect = Exception("Simulated error")
 
