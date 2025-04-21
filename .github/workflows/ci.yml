@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04  # ✅ stable LTS version
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -26,7 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        pip install pytest pytest-cov python-dotenv pytest-asyncio
+        pip install pytest pytest-asyncio pytest-cov python-dotenv
 
     - name: Run tests with coverage
       run: |
