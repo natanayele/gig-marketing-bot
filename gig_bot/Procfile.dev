@@ -1,0 +1,2 @@
+web: flask --app main:web_app run --port=5000
+worker: python main.py
