@@ -1,13 +1,22 @@
+import os
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+from telegram import Update
+from telegram.ext import ContextTypes
 
-from gig_bot.handlers.marketing import forward_to_marketing
-import config
 
+@patch.dict(os.environ, {
+    "DOCUMENTATION_GROUP_ID": "1234",
+    "MARKETING_GROUP_ID": "5678",
+    "TELEGRAM_TOKEN": "dummy-token"
+})
 @pytest.mark.asyncio
 async def test_forward_valid_message():
-    config.DOCUMENTATION_GROUP_ID = 1234
-    config.MARKETING_GROUP_ID = 5678
+    import importlib
+    import gig_bot.config as config
+    importlib.reload(config)
+
+    from gig_bot.handlers.marketing import forward_to_marketing
 
     mock_msg = MagicMock()
     mock_msg.chat.id = 1234
