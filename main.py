@@ -27,10 +27,13 @@ def webhook():
 
 
 # Set webhook once when the server starts
-@app.before_first_request
 def set_webhook():
-    heroku_url = os.environ.get("HEROKU_URL")
+    heroku_url = os.environ.get("HEROKU_URL")  # e.g. https://yourapp.herokuapp.com
     if heroku_url:
         bot.set_webhook(f"{heroku_url}/webhook")
+
+# Call it right after Flask app setup
+set_webhook()
+
 
 web_app = app
