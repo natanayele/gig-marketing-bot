@@ -11,9 +11,6 @@ bot = Bot(token=config.TELEGRAM_TOKEN)
 app = Flask(__name__)
 application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
 
-# Register your handlers
-from handlers.debug import debug_chat_id
-application.add_handler(MessageHandler(filters.ALL, debug_chat_id))
 
 from handlers.marketing import forward_to_marketing
 application.add_handler(CommandHandler("marketing", forward_to_marketing))
