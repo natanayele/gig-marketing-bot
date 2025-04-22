@@ -1,3 +1,4 @@
+import os  # ✅ <-- Add this!
 from flask import Flask, request
 from telegram import Update, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
@@ -28,7 +29,7 @@ async def webhook():
 # Set webhook once when the server starts
 @app.before_first_request
 def set_webhook():
-    heroku_url = os.environ.get("HEROKU_URL")  # e.g. https://mybot.herokuapp.com
+    heroku_url = os.environ.get("HEROKU_URL")
     if heroku_url:
         bot.set_webhook(f"{heroku_url}/webhook")
 
