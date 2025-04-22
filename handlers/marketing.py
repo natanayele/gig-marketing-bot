@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 import logging
-from gig_bot import config
+import config
 
 
 logger = logging.getLogger(__name__)
