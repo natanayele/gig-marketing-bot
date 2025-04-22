@@ -1,8 +1,7 @@
 import os  # ✅ <-- Add this!
 from flask import Flask, request
 from telegram import Update, Bot
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
-from telegram.ext import Dispatcher, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Dispatcher, MessageHandler, filters
 import config
 
 bot = Bot(token=config.TELEGRAM_TOKEN)
