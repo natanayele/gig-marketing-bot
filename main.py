@@ -30,8 +30,15 @@ async def webhook():
 
 def run_async_webhook():
     heroku_url = os.environ.get("HEROKU_URL")
-    if heroku_url:
-        asyncio.run(bot.set_webhook(f"{heroku_url}/webhook"))
+    if not heroku_url:
+        return
+
+    async def set_hook_if_needed():
+        webhook_info = await bot.get_webhook_info()
+        if webhook_info.url != f"{heroku_url}/webhook":
+            await bot.set_webhook(f"{heroku_url}/webhook")
+
+    asyncio.run(set_hook_if_needed())
 
 threading.Thread(target=run_async_webhook).start()
 
