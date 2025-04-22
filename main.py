@@ -3,6 +3,7 @@ from flask import Flask, request
 from telegram import Update, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import config
+import asyncio
 
 bot = Bot(token=config.TELEGRAM_TOKEN)
 
@@ -20,20 +21,16 @@ def health_check():
 
 # Webhook route
 @app.route("/webhook", methods=["POST"])
-def webhook():
+async def webhook():
     update = Update.de_json(request.json, bot)
-    application.create_task(application.process_update(update))
+    await application.process_update(update)
     return "ok"
 
-
-# Set webhook once when the server starts
-def set_webhook():
-    heroku_url = os.environ.get("HEROKU_URL")  # e.g. https://yourapp.herokuapp.com
+@app.before_first_request
+def init_webhook():
+    heroku_url = os.environ.get("HEROKU_URL")
     if heroku_url:
-        bot.set_webhook(f"{heroku_url}/webhook")
-
-# Call it right after Flask app setup
-set_webhook()
-
+        # schedule webhook to be set after the app starts
+        asyncio.get_event_loop().create_task(bot.set_webhook(f"{heroku_url}/webhook"))
 
 web_app = app
