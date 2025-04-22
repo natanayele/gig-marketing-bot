@@ -21,10 +21,11 @@ def health_check():
 
 # Webhook route
 @app.route("/webhook", methods=["POST"])
-async def webhook():
+def webhook():
     update = Update.de_json(request.json, bot)
-    await application.process_update(update)
+    application.create_task(application.process_update(update))
     return "ok"
+
 
 # Set webhook once when the server starts
 @app.before_first_request
