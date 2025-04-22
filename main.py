@@ -27,7 +27,7 @@ async def webhook():
     await application.process_update(update)
     return "ok"
 
-@app.before_first_request
+
 def run_async_webhook():
     heroku_url = os.environ.get("HEROKU_URL")
     if heroku_url:
