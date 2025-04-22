@@ -4,6 +4,7 @@ from telegram import Update, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import config
 import asyncio
+import threading
 
 bot = Bot(token=config.TELEGRAM_TOKEN)
 
@@ -27,10 +28,11 @@ async def webhook():
     return "ok"
 
 @app.before_first_request
-def init_webhook():
+def run_async_webhook():
     heroku_url = os.environ.get("HEROKU_URL")
     if heroku_url:
-        # schedule webhook to be set after the app starts
-        asyncio.get_event_loop().create_task(bot.set_webhook(f"{heroku_url}/webhook"))
+        asyncio.run(bot.set_webhook(f"{heroku_url}/webhook"))
+
+threading.Thread(target=run_async_webhook).start()
 
 web_app = app
