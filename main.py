@@ -31,14 +31,23 @@ async def webhook():
 def run_async_webhook():
     heroku_url = os.environ.get("HEROKU_URL")
     if not heroku_url:
+        print("HEROKU_URL not set.")
         return
 
-    async def set_hook_if_needed():
-        webhook_info = await bot.get_webhook_info()
-        if webhook_info.url != f"{heroku_url}/webhook":
-            await bot.set_webhook(f"{heroku_url}/webhook")
+    async def maybe_set_webhook():
+        current = await bot.get_webhook_info()
+        expected_url = f"{heroku_url}/webhook"
 
-    asyncio.run(set_hook_if_needed())
+        if current.url != expected_url:
+            print(f"Setting webhook to {expected_url}")
+            await bot.set_webhook(expected_url)
+        else:
+            print("Webhook already set correctly. Skipping.")
+
+    try:
+        asyncio.run(maybe_set_webhook())
+    except Exception as e:
+        print(f"Failed to set webhook: {e}")
 
 threading.Thread(target=run_async_webhook).start()
 
