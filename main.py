@@ -1,47 +1,35 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from flask import Flask, request
+from telegram import Update, Bot
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler
+from telegram.ext import Dispatcher, MessageHandler, filters
 import config
 
-# Forward specific messages from Documentation Group to Marketing Group
-async def forward_to_marketing(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    message = update.message
-    if message.chat.id == config.DOCUMENTATION_GROUP_ID:
-        if message.text and message.text.startswith("/marketing"):
-            # Clean up the command prefix
-            clean_message = message.text.replace("/marketing", "").strip()
+bot = Bot(token=config.TELEGRAM_TOKEN)
 
-            # Forward message to marketing group
-            await context.bot.send_message(
-                chat_id=config.MARKETING_GROUP_ID,
-                text=f"📢 From Documentation Team:\n\n{clean_message}"
-            )
+app = Flask(__name__)
+application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
 
-            # Confirmation in Documentation group
-            await message.reply_text("✅ Message forwarded to Marketing Team.")
+# Register your handlers
+from handlers.marketing import forward_to_marketing
+application.add_handler(CommandHandler("marketing", forward_to_marketing))
 
-# Command to directly communicate to marketing from private chat with bot
-async def direct_marketing(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if context.args:
-        msg = ' '.join(context.args)
-        await context.bot.send_message(
-            chat_id=config.MARKETING_GROUP_ID,
-            text=f"📢 Direct Message from {update.effective_user.first_name}:\n\n{msg}"
-        )
-        await update.message.reply_text("✅ Your message has been sent to the Marketing Team.")
-    else:
-        await update.message.reply_text("Please include a message after /marketing command.")
+# Health check
+@app.route("/", methods=["GET"])
+def health_check():
+    return "✅ Bot is alive"
 
-def main():
-    app = ApplicationBuilder().token(config.TOKEN).build()
+# Webhook route
+@app.route("/webhook", methods=["POST"])
+async def webhook():
+    update = Update.de_json(request.json, bot)
+    await application.process_update(update)
+    return "ok"
 
-    # Handler for forwarding messages with /marketing prefix
-    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), forward_to_marketing))
-    
-    # Handler for direct communication from private chats
-    app.add_handler(CommandHandler("marketing", direct_marketing))
+# Set webhook once when the server starts
+@app.before_first_request
+def set_webhook():
+    heroku_url = os.environ.get("HEROKU_URL")  # e.g. https://mybot.herokuapp.com
+    if heroku_url:
+        bot.set_webhook(f"{heroku_url}/webhook")
 
-    print("🤖 Bot is active and monitoring...")
-    app.run_polling()
-
-if __name__ == "__main__":
-    main()
+web_app = app
