@@ -27,6 +27,7 @@ def health_check():
 @app.route("/webhook", methods=["POST"])
 async def webhook():
     update = Update.de_json(request.json, bot)
+    print(f"📦 Raw incoming update: {request.json}")
     await application.process_update(update)
     return "ok"
 
