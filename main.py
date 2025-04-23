@@ -28,6 +28,7 @@ def health_check():
 def webhook():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+
     try:
         update = Update.de_json(request.json, bot)
         print(f"📦 Raw incoming update: {request.json}")
