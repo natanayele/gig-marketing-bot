@@ -25,10 +25,15 @@ def health_check():
 
 # Webhook route
 @app.route("/webhook", methods=["POST"])
-def webhook():
+async def webhook():
+    if not application.initialized:
+        await application.initialize()
+    
     update = Update.de_json(request.json, bot)
-    asyncio.run(application.process_update(update))
+    print(f"📦 Raw incoming update: {request.json}")
+    await application.process_update(update)
     return "ok"
+
 
 
 def run_async_webhook():
