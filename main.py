@@ -25,22 +25,14 @@ def health_check():
 # Webhook route
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
     try:
         update = Update.de_json(request.json, bot)
         print(f"📦 Raw incoming update: {request.json}")
 
-        async def handle_update():
-            await application.initialize()
-            await application.process_update(update)
+        asyncio.create_task(application.process_update(update))
 
-        loop.run_until_complete(handle_update())
     except Exception as e:
         print(f"❌ Error handling update: {e}")
-    finally:
-        loop.close()
 
     return "ok"
 
