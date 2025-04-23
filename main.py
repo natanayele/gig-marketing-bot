@@ -34,8 +34,6 @@ def webhook():
         print(f"📦 Raw incoming update: {request.json}")
 
         async def handle_update():
-            if not application.initialized:
-                await application.initialize()
             await application.process_update(update)
 
         loop.run_until_complete(handle_update())
