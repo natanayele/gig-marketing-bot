@@ -33,7 +33,8 @@ def webhook():
         update = Update.de_json(request.json, bot)
         print(f"📦 Raw incoming update: {request.json}")
 
-        asyncio.get_event_loop().create_task(application.process_update(update))
+        # Delegate task to the application's task queue
+        application.create_task(application.process_update(update))
 
     except Exception as e:
         print(f"❌ Error handling update: {e}")
