@@ -73,6 +73,5 @@ def initialize_app():
     loop.run_until_complete(application.initialize())
     loop.close()
 
-initialize_app()
 
 web_app = app
