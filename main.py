@@ -12,7 +12,6 @@ app = Flask(__name__)
 application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
 
 from handlers.debug import debug_chat_id  # make sure this file exists
-
 application.add_handler(CommandHandler("chatid", debug_chat_id))
 
 from handlers.marketing import forward_to_marketing
@@ -34,6 +33,8 @@ def webhook():
         print(f"📦 Raw incoming update: {request.json}")
 
         async def handle_update():
+            if not application.initialized:
+                await application.initialize()
             await application.process_update(update)
 
         loop.run_until_complete(handle_update())
@@ -43,7 +44,6 @@ def webhook():
         loop.close()
 
     return "ok"
-
 
 
 def run_async_webhook():
@@ -68,5 +68,14 @@ def run_async_webhook():
         print(f"Failed to set webhook: {e}")
 
 threading.Thread(target=run_async_webhook).start()
+
+# 🚀 Make sure application is initialized at startup
+def initialize_app():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(application.initialize())
+    loop.close()
+
+initialize_app()
 
 web_app = app
