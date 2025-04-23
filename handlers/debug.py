@@ -1,5 +1,9 @@
+from telegram import Update
+from telegram.ext import ContextTypes
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 async def debug_chat_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
