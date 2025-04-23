@@ -29,8 +29,13 @@ def webhook():
         update = Update.de_json(request.json, bot)
         print(f"📦 Raw incoming update: {request.json}")
 
-        # Fix: run the async handler directly inside this sync function
-        asyncio.run(application.process_update(update))
+        # Fix: use the same event loop for both initialization + processing
+        async def handle():
+            if not application._initialized:
+                await application.initialize()
+            await application.process_update(update)
+
+        asyncio.run(handle())
 
     except Exception as e:
         print(f"❌ Error handling update: {e}")
