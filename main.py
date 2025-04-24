@@ -6,11 +6,13 @@ import config
 import asyncio
 import threading
 from dotenv import load_dotenv
+from config import TELEGRAM_TOKEN
+
 
 # Load environment variables
 load_dotenv()
 
-bot = Bot(token=config.TELEGRAM_TOKEN)
+bot = Bot(token=TELEGRAM_TOKEN)
 
 app = Flask(__name__)
 application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
