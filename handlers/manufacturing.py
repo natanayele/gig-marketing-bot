@@ -17,4 +17,4 @@ async def manufacturing_router(update: Update, context: ContextTypes.DEFAULT_TYP
     if operation == "report":
         await update.message.reply_text("📦 Manufacturing status report request sent.")
     else:
-        await update.message.reply_text(f⚙️ Unknown manufacturing operation: {operation}")
+        await update.message.reply_text(f"⚙️ Unknown manufacturing operation: {operation}")
