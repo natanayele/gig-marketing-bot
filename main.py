@@ -4,15 +4,12 @@ from telegram import Update, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import config
 import asyncio
-import threading
 from dotenv import load_dotenv
-from config import TELEGRAM_TOKEN
-
 
 # Load environment variables
 load_dotenv()
 
-bot = Bot(token=TELEGRAM_TOKEN)
+bot = Bot(token=config.TELEGRAM_TOKEN)
 
 app = Flask(__name__)
 application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
@@ -35,8 +32,8 @@ def webhook():
         update = Update.de_json(request.json, bot)
         print(f"📦 Raw incoming update: {request.json}")
 
-        # Delegate task to the application's task queue
-        application.create_task(application.process_update(update))
+        # Recommended safe approach for webhooks
+        application.update_queue.put_nowait(update)
 
     except Exception as e:
         print(f"❌ Error handling update: {e}")
