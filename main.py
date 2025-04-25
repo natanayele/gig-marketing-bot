@@ -1,5 +1,3 @@
-# Trigger rebuild
-
 import os
 import asyncio
 from flask import Flask, request
@@ -17,46 +15,9 @@ bot = Bot(token=config.TELEGRAM_TOKEN)
 app = Flask(__name__)
 application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
 
-<<<<<<< HEAD
 # Import handlers
 from handlers.debug import debug_chat_id
 from handlers.marketing import marketing_router
-=======
-from handlers.debug import debug_chat_id
-from handlers.marketing import marketing_router
-
-from handlers.manufacturing import manufacturing_router
-from handlers.civil import civil_router
-# from handlers.governance import governance_router
-from handlers.vote import vote_router
-from handlers.proposal import proposal_router
-from handlers.investment import investment_router
-from handlers.funds import funds_router
-from handlers.members import members_router
-from handlers.roles import roles_router
-from handlers.admin import admin_router
-from handlers.audit import audit_router
-from handlers.chat import chatid_handler
-
-
-application.add_handler(CommandHandler("chatid", debug_chat_id))
-application.add_handler(CommandHandler("marketing", marketing_router))
-application.add_handler(CommandHandler("manufacturing", manufacturing_router))
-application.add_handler(CommandHandler("civil", civil_router))
-application.add_handler(CommandHandler("governance", governance_router))
-application.add_handler(CommandHandler("vote", vote_router))
-application.add_handler(CommandHandler("proposal", proposal_router))
-application.add_handler(CommandHandler("investment", investment_router))
-application.add_handler(CommandHandler("funds", funds_router))
-application.add_handler(CommandHandler("members", members_router))
-application.add_handler(CommandHandler("roles", roles_router))
-application.add_handler(CommandHandler("admin", admin_router))
-application.add_handler(CommandHandler("audit", audit_router))
-application.add_handler(CommandHandler("chatid", chatid_handler))
-
-
-from handlers.civil import civil_router
->>>>>>> 135d610977603ddbbe8efc390c248dd0b5a6ce2b
 from handlers.manufacturing import manufacturing_router
 from handlers.civil import civil_router
 from handlers.governance import propose, vote, handle_vote_callback  # Added callback
@@ -70,7 +31,7 @@ from handlers.roles import roles_router  # keep if exists
 from handlers.admin import admin_router
 from handlers.audit import audit_router
 from handlers.chat import chatid_handler
-from handlers.dashboard import dashboard_handler  # Added dashboard handler
+from handlers.dashboard import dashboard_handler, dashboard  # Added dashboard function
 from handlers.marketing import addlead_handler, listleads_handler
 
 application.add_handler(addlead_handler)
@@ -99,7 +60,6 @@ application.add_handler(CommandHandler("propose", propose))
 application.add_handler(CommandHandler("voting", vote))  # Avoid conflict: renamed from /vote
 application.add_handler(CallbackQueryHandler(handle_vote_callback))  # Inline voting callback
 
-
 # Health check
 @app.route("/", methods=["GET"])
 def health_check():
@@ -116,7 +76,56 @@ def webhook():
         print(f"❌ Error handling update: {e}")
     return "ok"
 
+# Background task: auto-push dashboard every 6 hours
+async def auto_dashboard_push():
+    await application.initialize()
+    chat_id = os.getenv("ADMIN_CHAT_ID")  # Set your admin or group chat ID in env
+    if not chat_id:
+        print("❌ ADMIN_CHAT_ID not set. Skipping auto dashboard.")
+        return
+
+    while True:
+        await asyncio.sleep(6 * 60 * 60)  # 6 hours
+        try:
+            await dashboard_push(chat_id)
+        except Exception as e:
+            print(f"❌ Error in auto dashboard push: {e}")
+
+async def dashboard_push(chat_id):
+    from utils.db import get_connection
+    conn = get_connection()
+    if not conn:
+        return
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT COUNT(*) FROM proposals WHERE title ILIKE '%civil%'")
+        civil_count = cur.fetchone()['count']
+        cur.execute("SELECT COUNT(*) FROM proposals WHERE title ILIKE '%manufacturing%'")
+        manufacturing_count = cur.fetchone()['count']
+        cur.execute("SELECT COUNT(*) FROM proposals WHERE title ILIKE '%marketing%'")
+        marketing_count = cur.fetchone()['count']
+        cur.execute("SELECT COUNT(*) FROM votes")
+        total_votes = cur.fetchone()['count']
+
+        await bot.send_message(
+            chat_id=chat_id,
+            text=(
+                f"📊 *Auto GIG Dashboard*\n\n"
+                f"🏗 Civil Proposals: {civil_count}\n"
+                f"🏭 Manufacturing Proposals: {manufacturing_count}\n"
+                f"📣 Marketing Proposals: {marketing_count}\n\n"
+                f"🗳 Total Votes Cast: {total_votes}"
+            ),
+            parse_mode='Markdown'
+        )
+    except Exception as e:
+        print(f"❌ Dashboard push error: {e}")
+    finally:
+        cur.close()
+        conn.close()
+
 # Initialize application and webhook
+
 def initialize_app():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -136,7 +145,11 @@ def initialize_app():
                 print("Webhook already set correctly. Skipping.")
 
         loop.run_until_complete(maybe_set_webhook())
-    loop.close()
+
+    # Start auto dashboard task
+    loop.create_task(auto_dashboard_push())
+
+    loop.run_forever()
 
 # Call the initializer
 initialize_app()
