@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # handlers/governance.py
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -123,7 +123,6 @@ def handle_vote_callback(update: Update, context: CallbackContext) -> None:
     except Exception as e:
         print(f"❌ Callback vote error: {e}")
         query.edit_message_text("❌ Failed to process your vote.")
-=======
 # Governance Handler
 
 from telegram import Update
@@ -131,4 +130,4 @@ from telegram.ext import ContextTypes
 
 async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔧 Governance handler is under development.")
->>>>>>> 135d610977603ddbbe8efc390c248dd0b5a6ce2b
+
