@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Marketing Handler
 
 from telegram import Update
@@ -6,7 +6,6 @@ from telegram.ext import ContextTypes
 
 async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🔧 Marketing handler is under development.")
-=======
 
 from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler
@@ -38,4 +37,4 @@ async def marketing_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text(f"📣 Marketing post received:\n{text_to_post}")
     else:
         await message.reply_text(f"❓ Unknown marketing action: {action}")
->>>>>>> fdbfcc8cfe83e6922af11b18cee0fc2111c56151
+
