@@ -32,7 +32,6 @@ async def add_lead(update: Update, context: CallbackContext):
         await update.message.reply_text("❌ Database connection error.")
         return
 
-
     try:
         cur = conn.cursor()
         cur.execute(
@@ -79,7 +78,6 @@ async def list_leads(update: Update, context: CallbackContext):
 # 📎 Export handlers
 addlead_handler = CommandHandler("addlead", add_lead)
 listleads_handler = CommandHandler("leads", list_leads)
-
     if action == "post":
         if not params:
             await message.reply_text("⚠️ Please provide a message to post.")
