@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GIG Bot Dashboard</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    textarea { width: 100%; height: 100px; }
+    .flash { padding: .5rem; margin-bottom: 1rem; border-radius: 4px; }
+    .success { background: #d4edda; color: #155724; }
+    .danger  { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <h1>GIG Bot Dashboard</h1>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="flash {{cat}}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="post">
+    <label for="marketing_message">Send Marketing Message:</label><br/>
+    <textarea id="marketing_message" name="marketing_message"></textarea><br/>
+    <button type="submit">Send</button>
+  </form>
+</body>
+</html>

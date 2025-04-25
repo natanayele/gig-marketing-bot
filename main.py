@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> fdbfcc8cfe83e6922af11b18cee0fc2111c56151
 import os
 from flask import Flask, request
 from telegram import Update, Bot
@@ -18,6 +21,7 @@ application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
 # === Command Handlers ===
 from handlers.debug import debug_chat_id
 from handlers.marketing import marketing_router
+<<<<<<< HEAD
 from handlers.manufacturing import manufacturing_router
 from handlers.civil import civil_router
 from handlers.governance import governance_router
@@ -29,6 +33,8 @@ from handlers.members import members_router
 from handlers.roles import roles_router
 from handlers.admin import admin_router
 from handlers.audit import audit_router
+from handlers.chat import chatid_handler
+
 
 application.add_handler(CommandHandler("chatid", debug_chat_id))
 application.add_handler(CommandHandler("marketing", marketing_router))
@@ -43,6 +49,17 @@ application.add_handler(CommandHandler("members", members_router))
 application.add_handler(CommandHandler("roles", roles_router))
 application.add_handler(CommandHandler("admin", admin_router))
 application.add_handler(CommandHandler("audit", audit_router))
+application.add_handler(CommandHandler("chatid", chatid_handler))
+
+=======
+from handlers.civil import civil_router
+from handlers.manufacturing import manufacturing_router
+
+application.add_handler(CommandHandler("chatid", debug_chat_id))
+application.add_handler(CommandHandler("marketing", marketing_router))
+application.add_handler(CommandHandler("civil", civil_router))
+application.add_handler(CommandHandler("manufacturing", manufacturing_router))
+>>>>>>> fdbfcc8cfe83e6922af11b18cee0fc2111c56151
 
 # Health check
 @app.route("/", methods=["GET"])

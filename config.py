@@ -1,0 +1,6 @@
+import os
+
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+DOCUMENTATION_GROUP_ID = int(os.getenv("DOCUMENTATION_GROUP_ID"))
+MARKETING_GROUP_ID = int(os.getenv("MARKETING_GROUP_ID"))
+ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID", "0"))
