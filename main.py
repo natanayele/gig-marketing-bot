@@ -19,42 +19,38 @@ application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
 from handlers.debug import debug_chat_id
 from handlers.manufacturing import manufacturing_router
 from handlers.civil import civil_router
-from handlers.governance import propose, vote, handle_vote_callback  # Added callback
-from handlers.proposal import proposal_router
+from handlers.governance import propose, vote, handle_vote_callback
 from handlers.investment import investment_router
 from handlers.funds import funds_router
 from handlers.members import members_router
-from handlers.roles import setrole_handler  # Added setrole handler
-from handlers.roles import roles_router  # keep if exists
+from handlers.roles import setrole_handler, roles_router
 from handlers.admin import admin_router
 from handlers.audit import audit_router
 from handlers.chat import chatid_handler
-from handlers.dashboard import dashboard_handler, dashboard  # Added dashboard function
+from handlers.dashboard import dashboard_handler, dashboard
 from handlers.marketing import addlead_handler, listleads_handler
 
+# Register handlers
 application.add_handler(addlead_handler)
 application.add_handler(listleads_handler)
+application.add_handler(dashboard_handler)
 
-
-# Add command handlers
 application.add_handler(CommandHandler("chatid", debug_chat_id))
 application.add_handler(CommandHandler("manufacturing", manufacturing_router))
 application.add_handler(CommandHandler("civil", civil_router))
-application.add_handler(CommandHandler("proposal", proposal_router))
 application.add_handler(CommandHandler("investment", investment_router))
 application.add_handler(CommandHandler("funds", funds_router))
 application.add_handler(CommandHandler("members", members_router))
-application.add_handler(setrole_handler)  # Register setrole command
+application.add_handler(setrole_handler)
 application.add_handler(CommandHandler("roles", roles_router))
 application.add_handler(CommandHandler("admin", admin_router))
 application.add_handler(CommandHandler("audit", audit_router))
 application.add_handler(CommandHandler("chatid", chatid_handler))
-application.add_handler(dashboard_handler)  # Register dashboard command
 
-# Governance specific commands: /propose and /vote
+# Governance-specific commands
 application.add_handler(CommandHandler("propose", propose))
-application.add_handler(CommandHandler("voting", vote))  # Avoid conflict: renamed from /vote
-application.add_handler(CallbackQueryHandler(handle_vote_callback))  # Inline voting callback
+application.add_handler(CommandHandler("voting", vote))
+application.add_handler(CallbackQueryHandler(handle_vote_callback))
 
 # Health check
 @app.route("/", methods=["GET"])
@@ -72,16 +68,16 @@ def webhook():
         print(f"❌ Error handling update: {e}")
     return "ok"
 
-# Background task: auto-push dashboard every 6 hours
+# Background task: Auto dashboard push
 async def auto_dashboard_push():
     await application.initialize()
-    chat_id = os.getenv("ADMIN_CHAT_ID")  # Set your admin or group chat ID in env
+    chat_id = os.getenv("ADMIN_CHAT_ID")
     if not chat_id:
         print("❌ ADMIN_CHAT_ID not set. Skipping auto dashboard.")
         return
 
     while True:
-        await asyncio.sleep(6 * 60 * 60)  # 6 hours
+        await asyncio.sleep(6 * 60 * 60)
         try:
             await dashboard_push(chat_id)
         except Exception as e:
@@ -121,13 +117,12 @@ async def dashboard_push(chat_id):
         conn.close()
 
 # Initialize application and webhook
-
 def initialize_app():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(application.initialize())
 
-    heroku_url = os.environ.get("HEROKU_URL")
+    heroku_url = os.getenv("HEROKU_URL")
     if not heroku_url:
         print("HEROKU_URL not set.")
     else:
@@ -142,12 +137,10 @@ def initialize_app():
 
         loop.run_until_complete(maybe_set_webhook())
 
-    # Start auto dashboard task
     loop.create_task(auto_dashboard_push())
-
     loop.run_forever()
 
-# Call the initializer
+# Start the app
 initialize_app()
 
 web_app = app
