@@ -20,7 +20,7 @@ from handlers.marketing import marketing_router
 
 from handlers.manufacturing import manufacturing_router
 from handlers.civil import civil_router
-from handlers.governance import governance_router
+# from handlers.governance import governance_router
 from handlers.vote import vote_router
 from handlers.proposal import proposal_router
 from handlers.investment import investment_router
