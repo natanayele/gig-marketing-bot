@@ -1,5 +1,7 @@
-flask
+# trigger deploy
 
+psycopg2-binary
+flask
 python-telegram-bot==20.0
 python-dotenv
 gunicorn
