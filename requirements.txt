@@ -1,11 +1,7 @@
 flask
-<<<<<<< HEAD
+
 python-telegram-bot==20.0
 python-dotenv
 gunicorn
-=======
-gunicorn
-python-dotenv
-python-telegram-bot==20.0
 httpx
->>>>>>> 135d610977603ddbbe8efc390c248dd0b5a6ce2b
+
