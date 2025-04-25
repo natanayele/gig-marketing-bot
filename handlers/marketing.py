@@ -1,5 +1,13 @@
 # handlers/marketing.py
 
+# Marketing Handler
+
+from telegram import Update
+from telegram.ext import ContextTypes
+
+async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🔧 Marketing handler is under development.")
+
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler
 from utils.db import get_connection
@@ -24,6 +32,7 @@ async def add_lead(update: Update, context: CallbackContext):
         await update.message.reply_text("❌ Database connection error.")
         return
 
+<<<<<<< HEAD
     try:
         cur = conn.cursor()
         cur.execute(
@@ -70,3 +79,15 @@ async def list_leads(update: Update, context: CallbackContext):
 # 📎 Export handlers
 addlead_handler = CommandHandler("addlead", add_lead)
 listleads_handler = CommandHandler("leads", list_leads)
+=======
+    if action == "post":
+        if not params:
+            await message.reply_text("⚠️ Please provide a message to post.")
+        else:
+            text_to_post = ' '.join(params)
+            # Here you could broadcast this to other channels or store
+            await message.reply_text(f"📣 Marketing post received:\n{text_to_post}")
+    else:
+        await message.reply_text(f"❓ Unknown marketing action: {action}")
+
+>>>>>>> 135d610977603ddbbe8efc390c248dd0b5a6ce2b
