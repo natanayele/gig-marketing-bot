@@ -1,3 +1,12 @@
+
+# Manufacturing Handler
+
+from telegram import Update
+from telegram.ext import ContextTypes
+
+async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🔧 Manufacturing handler is under development.")
+
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -18,3 +27,4 @@ async def manufacturing_router(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text("📦 Manufacturing status report request sent.")
     else:
         await update.message.reply_text(f"⚙️ Unknown manufacturing operation: {operation}")
+
