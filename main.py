@@ -21,7 +21,6 @@ from handlers.marketing import marketing_router
 from handlers.manufacturing import manufacturing_router
 from handlers.civil import civil_router
 from handlers.governance import propose, vote, handle_vote_callback  # Added callback
-# from handlers.vote import vote_router
 from handlers.proposal import proposal_router
 from handlers.investment import investment_router
 from handlers.funds import funds_router
@@ -43,7 +42,6 @@ application.add_handler(CommandHandler("chatid", debug_chat_id))
 application.add_handler(CommandHandler("marketing", marketing_router))
 application.add_handler(CommandHandler("manufacturing", manufacturing_router))
 application.add_handler(CommandHandler("civil", civil_router))
-# application.add_handler(CommandHandler("vote", vote_router))
 application.add_handler(CommandHandler("proposal", proposal_router))
 application.add_handler(CommandHandler("investment", investment_router))
 application.add_handler(CommandHandler("funds", funds_router))
