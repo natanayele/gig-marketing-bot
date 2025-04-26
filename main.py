@@ -11,9 +11,9 @@ app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("chatid", debug_chat_id))
 
 if __name__ == "__main__":
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 8443)),
-        webhook_path=TOKEN,                                      # we’ll use /<TOKEN> as the path
-        webhook_url=f"https://{HEROKU_APP}.herokuapp.com/{TOKEN}"  
-    )
+    port = int(os.environ.get("PORT", 8443))
+    app.run(host="0.0.0.0", port=port)
+# no run_webhook here!
+
+web_app = app
+
