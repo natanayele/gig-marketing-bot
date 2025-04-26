@@ -6,5 +6,7 @@ python-telegram-bot==20.0
 python-dotenv
 gunicorn
 httpx
-python-telegram-bot[webhooks]>=20.0
+Flask
+python-telegram-bot[webhooks]
+# any other deps…
 
