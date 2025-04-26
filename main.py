@@ -1,32 +1,28 @@
 import os
-import logging
 from telegram.ext import ApplicationBuilder, CommandHandler
-from handlers.debug import debug_chat_id  # your existing handler
+from handlers.debug import debug_chat_id
 
-# -- logging (optional, but helpful) --
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
-)
+TOKEN       = os.environ["TELEGRAM_TOKEN"]
+HEROKU_APP  = os.environ["HEROKU_APP_NAME"]  # e.g. "gig-marketing-bot-05b0d4bfb590"
+PORT        = int(os.environ.get("PORT", "8443"))
+WEBHOOK_URL = f"https://{HEROKU_APP}.herokuapp.com/{TOKEN}"
 
-# -- config vars --
-TOKEN = os.getenv("TELEGRAM_TOKEN")
-HEROKU_APP = os.getenv("HEROKU_APP_NAME")  # e.g. "gig-marketing-bot-05b0d4bfb590"
-if not TOKEN or not HEROKU_APP:
-    raise RuntimeError("TELEGRAM_TOKEN and HEROKU_APP_NAME must be set in Config Vars")
+# 1) build your Application
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("chatid", debug_chat_id))
 
-# -- build your Application --
-application = ApplicationBuilder().token(TOKEN).build()
-application.add_handler(CommandHandler("chatid", debug_chat_id))
+# 2) on startup, register your webhook URL with Telegram
+async def on_startup(application):
+    await application.bot.set_webhook(WEBHOOK_URL)
 
-def main():
-    port = int(os.environ.get("PORT", 8443))
-    application.run_webhook(
-        listen="0.0.0.0",
-        port=port,
-        url_path="webhook",
-        webhook_url=f"https://{HEROKU_APP}.herokuapp.com/webhook",
-    )
+app.post_init(on_startup)
 
+# 3) run the built Application’s webhook server
 if __name__ == "__main__":
-    main()
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        webhook_path=f"/{TOKEN}",      # path must match what you set in Telegram
+        # optionally set timeouts, etc:
+        # timeout=60,
+    )
