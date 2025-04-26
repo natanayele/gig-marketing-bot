@@ -1,9 +1,5 @@
-# handlers/marketing.py
-
-# 📣 Marketing Handler
-
 from telegram import Update
-from telegram.ext import ContextTypes, CallbackContext, CommandHandler
+from telegram.ext import CommandHandler, CallbackContext
 from utils.db import get_connection
 import re
 
@@ -16,7 +12,6 @@ async def add_lead(update: Update, context: CallbackContext):
     name = context.args[0]
     email = context.args[1]
 
-    # Basic email validation
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         await update.message.reply_text("⚠️ Invalid email format.")
         return
@@ -57,7 +52,9 @@ async def list_leads(update: Update, context: CallbackContext):
             await update.message.reply_text("No leads found.")
             return
 
-        text = "📋 *Leads List:*\n\n"
+        text = "📋 *Leads List:*
+
+"
         for row in rows:
             text += f"- {row['name']} ({row['email']})\n"
 
@@ -69,6 +66,5 @@ async def list_leads(update: Update, context: CallbackContext):
         cur.close()
         conn.close()
 
-# 📎 Export handlers
 addlead_handler = CommandHandler("addlead", add_lead)
 listleads_handler = CommandHandler("leads", list_leads)
