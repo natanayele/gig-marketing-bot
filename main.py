@@ -26,9 +26,12 @@ app = (
 app.add_handler(CommandHandler("chatid", debug_chat_id))
 
 if __name__ == "__main__":
-    # serve your webhook endpoint
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("chatid", debug_chat_id))
+
     app.run_webhook(
         listen="0.0.0.0",
         port=PORT,
-        url_path=WEBHOOK_PATH,
+        url_path=WEBHOOK_PATH,                         # local mount point
+        webhook_url=f"https://{HEROKU_APP}.herokuapp.com/{WEBHOOK_PATH}",  
     )
