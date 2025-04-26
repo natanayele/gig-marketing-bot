@@ -1,24 +1,32 @@
 import os
+import logging
 from telegram.ext import ApplicationBuilder, CommandHandler
+from handlers.debug import debug_chat_id  # your existing handler
 
-TOKEN      = os.environ["TELEGRAM_TOKEN"]
-HEROKU_APP = os.environ["HEROKU_APP_NAME"]
-PORT       = int(os.environ.get("PORT", "8443"))
+# -- logging (optional, but helpful) --
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
+)
 
-application = (
-    ApplicationBuilder()
-    .token(TOKEN)
-    .webhook(
+# -- config vars --
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+HEROKU_APP = os.getenv("HEROKU_APP_NAME")  # e.g. "gig-marketing-bot-05b0d4bfb590"
+if not TOKEN or not HEROKU_APP:
+    raise RuntimeError("TELEGRAM_TOKEN and HEROKU_APP_NAME must be set in Config Vars")
+
+# -- build your Application --
+application = ApplicationBuilder().token(TOKEN).build()
+application.add_handler(CommandHandler("chatid", debug_chat_id))
+
+def main():
+    port = int(os.environ.get("PORT", 8443))
+    application.run_webhook(
         listen="0.0.0.0",
-        port=PORT,
+        port=port,
         url_path="webhook",
         webhook_url=f"https://{HEROKU_APP}.herokuapp.com/webhook",
     )
-    .build()
-)
-
-from handlers.debug import debug_chat_id
-application.add_handler(CommandHandler("chatid", debug_chat_id))
 
 if __name__ == "__main__":
-    application.run_webhook()
+    main()
