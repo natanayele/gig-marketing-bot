@@ -1,30 +1,19 @@
 import os
-from flask import Flask, request
-from telegram import Bot, Update
 from telegram.ext import ApplicationBuilder, CommandHandler
-from dotenv import load_dotenv
-
-load_dotenv()  # make sure your TELEGRAM_TOKEN is in your .env / Config Vars
+from handlers.debug import debug_chat_id  # as defined below
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
-if not TOKEN:
-    raise RuntimeError("TELEGRAM_TOKEN is not set!")
+HEROKU_APP = os.getenv("HEROKU_APP_NAME")  # e.g. "gig-marketing-bot-05b0d4bfb590"
+if not TOKEN or not HEROKU_APP:
+    raise RuntimeError("TELEGRAM_TOKEN and HEROKU_APP_NAME must be set in Config Vars")
 
-# build your bot
-application = ApplicationBuilder().token(TOKEN).build()
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("chatid", debug_chat_id))
 
-# register only the debug handler
-from handlers.debug import debug_chat_id
-application.add_handler(CommandHandler("chatid", debug_chat_id))
-
-# flask app for webhook
-app = Flask(__name__)
-
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    update = Update.de_json(request.get_json(force=True), Bot(token=TOKEN))
-    application.update_queue.put_nowait(update)
-    return "ok"
-
-# expose Flask app to gunicorn
-web_app = app
+if __name__ == "__main__":
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 8443)),
+        webhook_path=TOKEN,                                      # we’ll use /<TOKEN> as the path
+        webhook_url=f"https://{HEROKU_APP}.herokuapp.com/{TOKEN}"  
+    )
