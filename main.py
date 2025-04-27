@@ -35,3 +35,6 @@ if __name__ == "__main__":
         url_path=WEBHOOK_PATH,                         # local mount point
         webhook_url=f"https://{HEROKU_APP}.herokuapp.com/{WEBHOOK_PATH}",  
     )
+# Expose `app` for Gunicorn
+
+web_app = app
