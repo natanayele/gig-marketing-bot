@@ -1,21 +1,68 @@
-# handlers/marketing.py
-
+import re
 from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes
+from telegram.ext import ContextTypes, CommandHandler
+from utils.db import get_connection
 
-# Function to add a lead
+# 📥 Add Lead Command
 async def add_lead(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("📥 Adding a new lead... (feature under development)")
+    if len(context.args) < 2:
+        await update.message.reply_text("Usage: /addlead <Name> <Email>")
+        return
 
-# Function to list leads
+    name, email = context.args[0], context.args[1]
+
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        await update.message.reply_text("⚠️ Invalid email format.")
+        return
+
+    conn = get_connection()
+    if not conn:
+        await update.message.reply_text("❌ Database connection error.")
+        return
+
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO leads (name, email) VALUES (%s, %s)",
+            (name, email)
+        )
+        conn.commit()
+        await update.message.reply_text(f"✅ Lead added: {name} ({email})")
+    except Exception as e:
+        await update.message.reply_text("❌ Error adding lead.")
+        print(f"DB error: {e}")
+    finally:
+        cur.close()
+        conn.close()
+
+# 📋 List Leads Command
 async def list_leads(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("📋 Listing all leads... (feature under development)")
+    conn = get_connection()
+    if not conn:
+        await update.message.reply_text("❌ Database connection error.")
+        return
 
-# Command handlers
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT name, email FROM leads ORDER BY created_at DESC LIMIT 20")
+        rows = cur.fetchall()
+
+        if not rows:
+            await update.message.reply_text("No leads found.")
+            return
+
+        text = "📋 *Leads List:*\n"
+        for row in rows:
+            name, email = row[0], row[1]
+            text += f"- {name} ({email})\n"
+
+        await update.message.reply_text(text, parse_mode='Markdown')
+    except Exception as e:
+        await update.message.reply_text("❌ Error fetching leads.")
+        print(f"DB error: {e}")
+    finally:
+        cur.close()
+        conn.close()
+
 addlead_handler = CommandHandler("addlead", add_lead)
-listleads_handler = CommandHandler("listleads", list_leads)
-from telegram import Update
-from telegram.ext import ContextTypes
-
-async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🔧 Marketing handler is under development.")
+listleads_handler = CommandHandler("leads", list_leads)

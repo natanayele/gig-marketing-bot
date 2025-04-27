@@ -1,40 +1,106 @@
 import os
-from telegram.ext import ApplicationBuilder, CommandHandler
-from handlers.debug import debug_chat_id
-
-# pull in your env vars
-TOKEN      = os.environ["TELEGRAM_TOKEN"]
-HEROKU_APP = os.environ["HEROKU_APP_NAME"]   # e.g. "gig-marketing-bot-05b0d4bfb590"
-PORT       = int(os.environ.get("PORT", "8443"))
-WEBHOOK_PATH = f"/{TOKEN}"
-WEBHOOK_URL  = f"https://{HEROKU_APP}.herokuapp.com{WEBHOOK_PATH}"
-
-# this coroutine will run right after the app starts up
-async def on_startup(app):
-    # tell Telegram where to POST updates
-    await app.bot.set_webhook(WEBHOOK_URL)
-
-# build your Application *with* the startup hook
-app = (
-    ApplicationBuilder()
-    .token(TOKEN)
-    .post_init(on_startup)   # <-- register it on the builder
-    .build()
+import asyncio
+from flask import Flask, request
+from telegram import Update, Bot
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    CallbackQueryHandler,
 )
+from dotenv import load_dotenv
+import config
 
-# register your handlers
-app.add_handler(CommandHandler("chatid", debug_chat_id))
+# Load environment
+load_dotenv()
 
-if __name__ == "__main__":
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("chatid", debug_chat_id))
+# Create bot & Flask app
+bot = Bot(token=config.TELEGRAM_TOKEN)
+app = Flask(__name__)
+application = ApplicationBuilder().token(config.TELEGRAM_TOKEN).build()
 
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=PORT,
-        url_path=WEBHOOK_PATH,                         # local mount point
-        webhook_url=f"https://{HEROKU_APP}.herokuapp.com/{WEBHOOK_PATH}",  
-    )
-# Expose `app` for Gunicorn
+# === Handler imports ===
+from handlers.debug import debug_chat_id
+from handlers.chat import chatid_handler
+from handlers.marketing import marketing_router, addlead_handler, listleads_handler
+from handlers.manufacturing import manufacturing_router
+from handlers.civil import civil_router
+from handlers.governance import governance_router, propose, vote, handle_vote_callback
+from handlers.proposal import proposal_router
+from handlers.vote import vote_router
+from handlers.investment import investment_router
+from handlers.funds import funds_router
+from handlers.members import members_router
+from handlers.roles import setrole_handler, roles_router
+from handlers.admin import admin_router
+from handlers.audit import audit_router
+from handlers.dashboard import dashboard_handler
 
+# === Register handlers ===
+# Debug / utility
+application.add_handler(CommandHandler("chatid", debug_chat_id))
+application.add_handler(chatid_handler)
+
+# Marketing
+application.add_handler(marketing_router)
+application.add_handler(addlead_handler)
+application.add_handler(listleads_handler)
+
+# Manufacturing & civil
+application.add_handler(CommandHandler("manufacturing", manufacturing_router))
+application.add_handler(CommandHandler("civil", civil_router))
+
+# Governance & voting
+application.add_handler(CommandHandler("propose", propose))
+application.add_handler(CommandHandler("voting", vote))
+application.add_handler(CallbackQueryHandler(handle_vote_callback))
+
+# Proposals & direct votes
+application.add_handler(CommandHandler("proposal", proposal_router))
+application.add_handler(CommandHandler("vote", vote_router))
+
+# Other domains
+application.add_handler(CommandHandler("investment", investment_router))
+application.add_handler(CommandHandler("funds", funds_router))
+application.add_handler(CommandHandler("members", members_router))
+
+# Roles & admin
+application.add_handler(setrole_handler)
+application.add_handler(CommandHandler("roles", roles_router))
+application.add_handler(CommandHandler("admin", admin_router))
+application.add_handler(CommandHandler("audit", audit_router))
+
+# Dashboard
+application.add_handler(dashboard_handler)
+
+# === Health-check & webhook endpoint ===
+@app.route("/", methods=["GET"])
+def health_check():
+    return "✅ Bot is alive"
+
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    update = Update.de_json(request.json, bot)
+    application.update_queue.put_nowait(update)
+    return "ok"
+
+# === Initialize & set webhook ===
+def initialize_app():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(application.initialize())
+
+    heroku_url = os.getenv("HEROKU_URL")
+    if heroku_url:
+        async def maybe_set_webhook():
+            info = await bot.get_webhook_info()
+            expected = f"{heroku_url}/webhook"
+            if info.url != expected:
+                await bot.set_webhook(expected)
+        loop.run_until_complete(maybe_set_webhook())
+
+    loop.close()
+
+initialize_app()
+
+# Expose Flask app for Gunicorn
 web_app = app
